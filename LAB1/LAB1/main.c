@@ -41,7 +41,7 @@ char retezec[80] = "Hodnota=";
 char buffer[10];
 int cislo = 42;
 int *ptr = &cislo;
-//musime vytvorit soubor pro STDOUT
+
 FILE uart_str = FDEV_SETUP_STREAM(printCHAR, NULL, _FDEV_SETUP_RW);
 
 /************************************************************************/
@@ -72,42 +72,51 @@ int main(void)
     _delay_ms(500);
 	
 	
-//	#ifdef odecet
-// 	x -= konst;
-// 	#endif
-// 	printf("Hodnota je : %d\n\r", x);
-// 	unsigned int c = (unsigned int)a + (unsigned int)b;
-// 	printf("Soucet c: %u\n\r", c);
-// 	y = y >> 3;
-// 	y = y - 1;
-// 	y = y & 0x2;
-// 	printf("Vysledek je: %d\n\r", y); 
-// 	itoa(hodnota, buffer, 10);
-// 	strcat(retezec, buffer);
-// 	printf("string.h a stdlib.h: %s\n\r", retezec);
-// 
-// 
-// 	char retezec2[80];
-// 	sprintf(retezec2, "Hodnota=%d", hodnota);
-// 	printf("sprintf: %s\n\r", retezec2);
-// 	generateField(NORMAL_CASE); 
-// 	printField();               
-// 	capsLetters();              
-// 	printField();               
-// 	return 0;
-	
-// 	printf("Hodnota cislo: %d\n\r", *ptr);  
-// 	printf("Adresa cislo: %p\n\r", (void*)ptr); 
+/*	#ifdef odecet
+ 	x -= konst;
+ 	#endif
+ 	printf("Hodnota je : %d\n\r", x);
+	 */
 
-// 	DDRB |= (1 << DDB6);
-// 	    while (1)
-//	    {		   
-//		    PORTB &= ~(1 << PORTB6);  		    
-//		    _delay_ms(500);  		    
-//		    PORTB |= (1 << PORTB6);   
-//		    _delay_ms(500);
-//	    }
-// 		return 0;
+/* 	unsigned int c = (unsigned int)a + (unsigned int)b;
+ 	printf("Soucet c: %u\n\r", c);
+*/
+
+/* 	y = y >> 3;
+ 	y = y - 1;
+ 	y = y & 0x2;
+ 	printf("Vysledek je: %d\n\r", y); 
+*/
+
+/* 	itoa(hodnota, buffer, 10);
+ 	strcat(retezec, buffer);
+ 	printf("string.h a stdlib.h: %s\n\r", retezec);
+ */
+ 
+/* 	char retezec2[80];
+ 	sprintf(retezec2, "Hodnota=%d", hodnota);
+ 	printf("sprintf: %s\n\r", retezec2);
+ 	generateField(NORMAL_CASE); 
+ 	printField();               
+ 	capsLetters();              
+ 	printField();               
+ 	return 0;
+*/
+
+/* 	printf("Hodnota cislo: %d\n\r", *ptr);  
+ 	printf("Adresa cislo: %p\n\r", (void*)ptr); 
+*/
+
+/* 	DDRB |= (1 << DDB6);
+ 	    while (1)
+	    {		   
+		    PORTB &= ~(1 << PORTB6);  		    
+		    _delay_ms(500);  		    
+		    PORTB |= (1 << PORTB6);   
+		    _delay_ms(500);
+	    }
+ 		return 0;
+*/
 
 DDRB |= (1 << DDB5) | (1 << DDB6);
 DDRE |= (1 << DDE3);
@@ -157,11 +166,12 @@ while (1)
 return 0;
 
 
-// 	int i=0;
-//     while (1) 
-//     {
-// 	_delay_ms(10000);
-// 	i++;
-// 	printf("Test x = %d \n\r", i);
-//     }
+/* 	int i=0;
+     while (1) 
+     {
+ 	_delay_ms(10000);
+ 	i++;
+ 	printf("Test x = %d \n\r", i);
+     }
+	 */
 }

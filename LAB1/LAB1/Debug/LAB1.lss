@@ -305,10 +305,10 @@ int main(void)
  1c8:	e1 f7       	brne	.-8      	; 0x1c2 <main+0x24>
  1ca:	00 c0       	rjmp	.+0      	; 0x1cc <main+0x2e>
  1cc:	00 00       	nop
-//		    PORTB |= (1 << PORTB6);   
-//		    _delay_ms(500);
-//	    }
-// 		return 0;
+		    _delay_ms(500);
+	    }
+ 		return 0;
+*/
 
 DDRB |= (1 << DDB5) | (1 << DDB6);
  1ce:	84 b1       	in	r24, 0x04	; 4
