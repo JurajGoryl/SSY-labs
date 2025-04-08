@@ -1,0 +1,271 @@
+
+// includes ********************************
+
+#include "libs/macros.h"
+#include <avr/io.h>
+#include <util/delay.h>
+#include <avr/interrupt.h>
+#include "libs/libprintfuart.h"
+#include <stdio.h>
+#include <stdbool.h>
+
+//UART output stream
+
+FILE uart_str = FDEV_SETUP_STREAM(printCHAR, NULL, _FDEV_SETUP_RW);
+
+//defines for weight sensors ********************************
+
+#define ADSK_PIN PINF   
+#define ADSK_DDR DDRF
+#define ADSK_PORT PORTF
+#define ADSK_BIT PF3    
+
+#define ADDO_PIN PING  
+#define ADDO_DDR DDRG
+#define ADDO_PORT PORTG
+#define ADDO_BIT PG5    
+
+//HX711 init - pin setup *************************************
+
+void Hx711_init(void) 
+{
+	ADDO_DDR &= ~(1 << ADDO_BIT);  //data pin as input
+	ADDO_PORT |= (1 << ADDO_BIT);  //pull up enabled
+	ADSK_DDR |= (1 << ADSK_BIT);   //clk pin as output
+	ADSK_PORT &= ~(1 << ADSK_BIT); //clk set low
+}
+
+//HX711 24b data read ***************************************
+
+unsigned long Hx711_read(void) 
+{
+	unsigned long Count = 0;
+	uint8_t i;
+
+	while (ADDO_PIN & (1 << ADDO_BIT)); // waiting for data
+
+	for (i = 0; i < 24; i++) 
+	{
+		ADSK_PORT |= (1 << ADSK_BIT);  // clk high
+		Count = Count << 1;
+		ADSK_PORT &= ~(1 << ADSK_BIT); // clk low
+
+		if (ADDO_PIN & (1 << ADDO_BIT)) 
+		{
+			Count++;
+		}
+	}
+
+	ADSK_PORT |= (1 << ADSK_BIT); //clk for mode setup
+	Count ^= 0x800000;
+	ADSK_PORT &= ~(1 << ADSK_BIT);
+
+	return Count;
+}
+
+//MENU
+void printMenu() 
+{
+	UART_SendStringNewLine("MENU");
+	UART_SendStringNewLine("set 0 and tare");
+	UART_SendStringNewLine("rewset of console");
+}
+
+void cleanConsole() 
+{
+	for (int i = 0; i < 30; i++) 
+	{
+        UART_SendStringNewLine("");  // Send an empty string which is just a newline
+    }
+}
+
+// reading of average value for more accuracy
+unsigned long read_average(uint8_t times) 
+{
+	unsigned long sum = 0;
+	for (uint8_t i = 0; i < times; i++) 
+	{
+		sum += Hx711_read();
+		_delay_ms(20);
+	}
+	return sum / times;
+}
+
+
+// function for comparison
+int compare_ul(const void *a, const void *b) 
+{
+	unsigned long arg1 = *(const unsigned long *)a;
+	unsigned long arg2 = *(const unsigned long *)b;
+	if (arg1 < arg2) return -1;
+	if (arg1 > arg2) return 1;
+	return 0;
+}
+
+
+// reading of median value for more accuracy
+unsigned long read_median(uint8_t times) 
+{
+	if (times == 0) return 0;
+
+	unsigned long values[times];
+
+	for (uint8_t i = 0; i < times; i++) 
+	{
+		values[i] = Hx711_read();
+		_delay_ms(2);
+	}
+
+	qsort(values, times, sizeof(unsigned long), compare_ul);  
+
+	if (times % 2 == 0) 
+	{
+		return (values[times / 2 - 1] + values[times / 2]) / 2;
+	}
+	else 
+	{
+		return values[times / 2];
+	}
+}
+
+
+// calibration of device 
+void kalibracia() 
+{
+	UART_SendStringNewLine(">>> calibration <<<");
+	UART_SendStringNewLine("do not touch calibration");
+	_delay_ms(2000);
+	unsigned long zero_offset = read_median(1000);
+	UART_SendStringNewLine("zero is set");
+
+	// calibration of known mass
+	UART_SendStringNewLine("put known 200g weight on weights and press ENTER");
+	while (!(UART_DataAvailable()));  //waiting for input
+	UART_GetChar();  //reading ENTER
+	_delay_ms(2000);
+
+	unsigned long loaded_value = read_median(1000);
+	long diff = loaded_value - zero_offset;
+
+	float known_weight = 200.0; // set known weight
+	float scale = known_weight / diff;
+
+	UART_SendStringNewLine("DONE");
+
+	while (1) 
+	{
+		unsigned long value = Hx711_read();
+		long diff = value - zero_offset;
+		float weight = diff * scale;
+
+		char buf[30];
+		sprintf(buf, "Vaha: %.2f g", weight);
+		UART_SendStringNewLine(buf);
+
+		_delay_ms(500);
+	}
+}
+
+
+
+
+
+
+
+// Globálne premenne na kalibráciu
+unsigned long zero_offset = 0;
+float scale = 1.0;
+
+void handleReceivedData(uint8_t *data, uint8_t len)
+{
+	char str[64];
+	if (len >= sizeof(str)) len = sizeof(str) - 1;
+
+	memcpy(str, data, len);
+	str[len] = '\0';
+
+	UART_SendStringNewLine(">> Prijate data:");
+	UART_SendStringNewLine(str);
+
+	// Príkaz na kalibráciu nuly
+	if (strcmp(str, "CAL:ZERO") == 0) {
+		UART_SendStringNewLine("Kalibrujem nulu...");
+		zero_offset = read_median(1000);
+		UART_SendStringNewLine("Zero OK");
+	}
+	// Príkaz na nastavenie mierky
+	else if (strncmp(str, "SET:SCALE:", 10) == 0) {
+		float new_scale = atof(&str[10]);
+		scale = new_scale;
+		UART_SendStringNewLine("Scale nastavena");
+	}
+	// Príkaz na jedno meranie
+	else if (strcmp(str, "MEASURE") == 0) {
+		unsigned long value = Hx711_read();
+		float weight = (value - zero_offset) * scale;
+		char buf[30];
+		sprintf(buf, "Vaha: %.2f g", weight);
+		UART_SendStringNewLine(buf);
+	}
+	else {
+		UART_SendStringNewLine("Neznamy prikaz.");
+	}
+}
+
+
+
+
+
+
+
+
+
+int main(void) 
+{
+    UART_init(38400);  
+	stdout = &uart_str;
+	
+    // Enable internal pull-ups (if no external resistors)
+    sbi(PORTE, PORTE5);
+    sbi(PORTE, PORTE6);
+
+    // Configure external interrupts
+    sbi(EICRB, ISC51); cbi(EICRB, ISC50); // INT5 -> Falling edge
+    sbi(EICRB, ISC61); cbi(EICRB, ISC60); // INT6 -> Falling edge
+
+    // Enable external interrupts
+    sbi(EIMSK, INT5);  
+    sbi(EIMSK, INT6);  
+
+    sei(); // Enable global interrupts
+		
+	printMenu();
+	while (1) 
+	{
+		char received = UART_GetChar(); 
+		UART_SendStringNewLine("STLACIL SI:");
+		UART_SendChar(received);
+		UART_SendChar('\r');
+		UART_SendChar('\n');
+
+		switch (received) 
+		{
+            case '0':
+				cleanConsole();
+				printMenu();
+            break; 
+
+    case '1':
+        Hx711_init();
+        UART_SendStringNewLine("Init done.");
+        kalibracia(); 
+        break;
+
+
+			break;
+            default:
+                UART_SendStringNewLine("Stlac nieco ine :D");
+				break;
+		}
+	}
+}
