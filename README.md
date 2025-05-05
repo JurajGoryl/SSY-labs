@@ -36,4 +36,108 @@ po stlačení tlačidla 2 sa zoberie aktuálna hodnota hmotnosti a pošle sa na 
 
 OPIS FUNKCIÍ:
 
+unsigned long read_median(uint8_t times) 
+{
+	if (times == 0) return 0;
 
+	unsigned long values[times];
+
+	for (uint8_t i = 0; i < times; i++) 
+	{
+		values[i] = Hx711_read();
+		_delay_ms(2);
+	}
+
+	qsort(values, times, sizeof(unsigned long), compare_ul);  
+
+	if (times % 2 == 0) 
+	{
+		return (values[times / 2 - 1] + values[times / 2]) / 2;
+	}
+	else 
+	{
+		return values[times / 2];
+	}
+}
+
+Vypočíta medián pre väčšiu presnoť kalibrácie.
+
+
+
+void kalibracia() 
+{
+	UART_SendStringNewLine(">>> prebieha kalibraica <<<");
+	UART_SendStringNewLine("nedotykaj sa");
+	_delay_ms(2000);
+	unsigned long zero_offset = read_median(1000);
+	UART_SendStringNewLine("nula nastavena");
+
+	// calibration of known mass
+	UART_SendStringNewLine("poloz 200g zavazie a stlac ENTER");
+	while (!(UART_DataAvailable()));  //waiting for input
+	UART_GetChar();  //reading ENTER
+	_delay_ms(2000);
+
+	unsigned long loaded_value = read_median(1000);
+	long diff = loaded_value - zero_offset;
+
+	float known_weight = 200.0; // set known weight
+	float scale = known_weight / diff;
+
+	UART_SendStringNewLine("HOTOVO");
+
+	while (1) 
+	{
+		unsigned long value = Hx711_read();
+		long diff = value - zero_offset;
+		float weight = diff * scale;
+
+		char buf[30];
+		sprintf(buf, "Vaha: %.2f g", weight);
+		UART_SendStringNewLine(buf);
+
+		_delay_ms(500);
+	}
+}
+
+Kalibračná funkcia so známim závažím.
+
+
+void Hx711_init(void) {
+	ADDO_DDR &= ~(1 << ADDO_BIT);  // Set ADDO as input
+	ADDO_PORT |= (1 << ADDO_BIT);  // Enable pull-up (if needed)
+	
+	ADSK_DDR |= (1 << ADSK_BIT);   // Set ADSK as output
+	ADSK_PORT &= ~(1 << ADSK_BIT); // Start ADSK low
+}
+
+unsigned long Hx711_read(void) 
+{
+	unsigned long Count = 0;
+	uint8_t i;
+
+	// Wait until ADDO goes low (indicates data ready)
+	while (ADDO_PIN & (1 << ADDO_BIT));
+
+	// Read 24-bit data
+	for (i = 0; i < 24; i++) 
+	{
+		ADSK_PORT |= (1 << ADSK_BIT);  // Set ADSK high
+		Count = Count << 1;
+		ADSK_PORT &= ~(1 << ADSK_BIT); // Set ADSK low
+
+		if (ADDO_PIN & (1 << ADDO_BIT)) 
+		{
+			Count++;
+		}
+	}
+
+	// Send extra clock pulse to set device mode
+	ADSK_PORT |= (1 << ADSK_BIT);
+	Count ^= 0x800000; // Convert signed 24-bit value
+	ADSK_PORT &= ~(1 << ADSK_BIT);
+
+	return Count;
+}
+
+Inicializácia prevodníka a odčítane aktuálnej hodnoty.
