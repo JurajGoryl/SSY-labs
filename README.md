@@ -14,6 +14,9 @@ Po spustení sa zobrazí menu v UART termináli (napr. PuTTY, 38400 baud), ktor�
 * `2` – Odoslanie váhy na Gateway
 * `0` – Vyčistenie terminálu
 
+
+![image](https://github.com/user-attachments/assets/98809833-21b0-4c00-a1cc-d729ac80165e)
+
 ---
 
 ## KALIBRÁCIA POMOCU ZNÁMEHO ZÁVAŽIA
@@ -25,6 +28,9 @@ Táto možnosť spustí proces kalibrácie:
 3. Následne sa vyzve položiť 200g závažie a potvrdiť ENTERom.
 4. Z ďalších 1000 vzoriek sa vypočíta **skalovací faktor**.
 5. Váha potom periodicky zobrazuje meranú hmotnosť v gramoch.
+
+
+![Capture2](https://github.com/user-attachments/assets/5ed088cb-cfda-4a31-b421-09cec1b3a0c8)
 
 ---
 
@@ -75,6 +81,12 @@ static void appSendData(void)
 &#x20;&#x20;
 
 &#x20;&#x20;
+
+
+![unnamed](https://github.com/user-attachments/assets/32ceb37d-ae77-43ae-995a-9d6c146b2393)
+
+
+
 
 ---
 
