@@ -1,4 +1,4 @@
-
+https://github.com/JurajGoryl/SSY-labs/tree/main/projekt%20SSY%20hotovo
 
 JURAJ GORYL 240913
 
@@ -24,7 +24,16 @@ Po spustení kódu sa nám ponúkne menu kde si môžemem vybrať z viacerých m
 
 KALIBRÁCIA POMOCU ZNÁMEHO ZÁVAŽIA.
 
-Táto možnosť spustí kalibráciu pomocou známeho závažia. Kalibrácia prebieha tak, že najskôr je užívateľ vyzvaný na to aby sa ničoho nedotýkal. V tom okamihu je načítavyných viacero hodnôt, z ktorých je následne pomocou funkcie počítajúcej medián vypočítaná základná ADC hodnota váhy. Následne je užívateľ vyzvaný na to aby položil závažie známej váhy (200g) a stlačil ENTER na potvrdenie 
+Táto možnosť spustí kalibráciu pomocou známeho závažia. Kalibrácia prebieha tak, že najskôr je užívateľ vyzvaný na to aby sa ničoho nedotýkal. V tom okamihu je načítavyných viacero hodnôt, z ktorých je následne pomocou funkcie počítajúcej medián vypočítaná základná ADC hodnota váhy. Následne je užívateľ vyzvaný na to aby položil závažie známej váhy (200g) a stlačil ENTER na potvrdenie. Po stlačení ENTERu sa znova načítava viacej hodnôt s ktrých sa vypočíta mediám. Následne sa v konzole začne vypisovať aktuálna hmotnosť v gramoch.
 
+![Capture2](https://github.com/user-attachments/assets/45a9815e-5cac-4550-8e8f-06f0be22ecf6)
+
+
+ODOSLANIE NA GATEWAY
+po stlačení tlačidla 2 sa zoberie aktuálna hodnota hmotnosti a pošle sa na Gateway 
+
+![unnamed](https://github.com/user-attachments/assets/9deea029-01ce-4761-bec5-2061600c963b)
+
+OPIS FUNKCIÍ:
 
 
