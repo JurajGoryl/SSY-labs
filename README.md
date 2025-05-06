@@ -1,5 +1,8 @@
 ##  SSY  Projekt – LWM + HX711
 https://github.com/JurajGoryl/SSY-labs/tree/main/projekt%20SSY%20hotovo
+
+
+
 **Juraj Goryl | 240913**
 
 Tento projekt bol vypracovaný v rámci predmetu MPC-SSY. Ide o váhový systém využívajúci prevodník HX711 a bezdrôtovú komunikáciu cez LWM.
